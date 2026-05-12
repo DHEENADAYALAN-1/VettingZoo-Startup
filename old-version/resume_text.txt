@@ -1,0 +1,61 @@
+========== RESUME TEXT ==========
+
+BHARATHAN K
+Bangalore Urban,Karnataka,Indiabharathanmoorthy@outlook.com+91 63843 22105in/bharathan-k-094894283
+SUMMARY
+Computer Science undergraduate with a strong interest in enterprise systems, cloud technologies, and business process automation. I enjoy       
+designing structured, repeatable solutions that automate workflows and improve operational efficiency. Built NeedARoomie, a data-driven platform
+to solve a real problem in my university where students struggled to find compatible roommates. The platform automates the end-to-end process—  
+from profile creation and matching to communication and notifications—using backend logic, database triggers, and AI-driven workflows.
+Passionate about combining technology and business to build scalable systems that enable structured growth.
+EXPERIENCE
+Web Development Intern
+ApexPlanet Software Pvt. Ltd. April 2025 - May 2025Bihar,
+•Completed 10+ structured web development tasks as part of a guided remote internship program.  
+•Developed and enhanced 5+ responsive web pages using HTML, CSS, and JavaScript.
+•Implemented client-side features including forms, validations, and reusable UI components based on provided specifications.
+•Debugged and improved frontend logic across multiple task modules to ensure functional correctness and usability.
+•Followed defined workflows, deadlines, and submission standards in a 100% remote setup, strengthening disciplined execution.
+PROJECTS
+NeedARoomie – Automated Roommate & Rental Matching Platform
+Self-Initiated University Project•needaroomie.com/•July 2025 - Present
+•Developed a full-stack web platform supporting multiple cities and organizations for verified room and roommate discovery.
+•Architected 8+ structured workflows covering room listing, roommate profile creation, verification, and approval processes.
+•Automated 100% of room and roommate verification approvals using backend logic and database triggers.
+•Implemented event-driven email notifications for 5+ user actions, streamlining onboarding and communication.
+•Designed organization- and lifestyle-based matching logic using multiple compatibility parameters to improve transparency.
+•Applied role-based access control (RBAC) across multiple user roles to support secure and scalable operations.
+EDUCATION
+B.Tech Computer Science and Engineering
+CHRIST UNIVERSITY•Bangalore•2027
+CERTIFICATIONS
+Ultimate AWS Certified Solutions Architect Associate 2026
+Udemy(Stephane Maarek)•2026
+•Builds strong understanding of AWS core services (EC2, S3, IAM, VPC, RDS)
+•Teaches design of scalable, highly available, and fault-tolerant architectures
+•Covers AWS security best practices and access control using IAM
+•Provides hands-on experience with infrastructure automation using CloudFormation
+•Explains monitoring, logging, and cost optimisation using CloudWatch
+•Aligns with real-world cloud architecture scenarios and AWS Solutions Architect Associate standards
+Complete Linux Training Course
+Imran Afzal (Udemy)•2025
+•Hands-on experience with Linux system administration and command-line operations
+•Knowledge of shell scripting for basic automation tasks
+•Understanding of networking, services, and system updates
+•Exposure to disk management, run levels, and process control
+•Relevant for backend systems, cloud environments, and enterprise application support
+Meta Front-End Developer Professional Certificate
+Meta•2024
+•Provides strong foundation in web application development, component-based architecture, and building user-facing systems. Supports enterprise 
+application development and understanding of scalable front-end solutions used in business platforms.SKILLS
+Databases: SQL, PostgreSQL, database triggers, AWS RDS
+Enterprise Systems: ERP fundamentals, business workflows, system integration
+s, infrastructure automation (CloudFormation)
+Monitoring & Communication: Sentry (error monitoring), Brevo (email auts, infrastructure automation (CloudFormation)
+s, infrastructure automation (CloudFormation)   
+Monitoring & Communication: Sentry (error monitoring), Brevo (email automation), AWS CloudWatch 
+Testing: Unit testing, functional testing       
+Tools: Git, GitHub
+Documentation: Technical & cloud architecture documentation
+Soft Skills: Analytical thinking, system design mindset, team collaboration, communication      
+PS C:\Users\ndhee\Desktop\Resume ai>

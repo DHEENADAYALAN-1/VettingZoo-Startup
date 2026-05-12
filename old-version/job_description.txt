@@ -1,0 +1,9 @@
+We are hiring a Software Engineer.
+
+Must have skills: Java, SQL, AWS, Git, Linux, Cloud.
+Good to have skills: Python, Docker, Machine Learning, Data Science.
+
+Responsibilities:
+- Build scalable backend services
+- Work on cloud deployment
+- Collaborate using Git
