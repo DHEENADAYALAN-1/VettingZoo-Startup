@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
-from sentence_transformers import SentenceTransformer, util
+
 
 from resume_parser import extract_text_from_pdf
 from skill_extractor import extract_skills
@@ -21,7 +21,7 @@ load_dotenv()
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+
 
 genai.configure(api_key=os.getenv("AIzaSyBeQqN7WYU8zwnD-pksIphwMfrKdMbf798"))
 gemini_model = genai.GenerativeModel("gemini-1.5-flash")
