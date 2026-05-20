@@ -1,33 +1,77 @@
-Vetting Zoo
+# Vetting Zoo 🦁
 
-OVERVIEW
-This project is an AI-powered Resume Screening system similar to an ATS.
-It extracts skills from a resume PDF and matches them with a Job Description
-to generate a suitability score and recommendation.
+AI-powered hiring intelligence platform for recruiters and candidates.
 
-FEATURES
-- Upload Resume (PDF)
-- Paste Job Description
-- Extract skills
-- Matched skills + Missing skills
-- Final Score + Recommendation
-- Download report
+## 🚀 Live Demo
+https://vetting-zoo-startup.vercel.app
 
-TECH STACK
+## 📌 Features
+
+### 👨‍💼 Recruiter Workspace
+- Upload multiple resumes
+- AI candidate ranking
+- ATS compatibility analysis
+- Semantic resume matching
+- AI-generated hiring insights
+- Missing skill detection
+- Recruiter-friendly dashboard
+
+### 👨‍🎓 Candidate Resume Analyzer
+- Resume vs job description analysis
+- ATS score generation
+- Missing skills identification
+- AI interview preparation suggestions
+- Resume strength analysis
+
+## 🛠 Tech Stack
+
+### Frontend
+- Next.js
+- TypeScript
+- Tailwind CSS
+
+### Backend
+- FastAPI
 - Python
-- Streamlit
-- PyPDF2
-- Scikit-learn (TF-IDF + Cosine Similarity)
 
-HOW TO RUN
-1) Install dependencies:
+### AI & Database
+- Gemini AI
+- Supabase
+
+## 📷 Product Screens
+
+- Landing Page
+- Recruiter Dashboard
+- Resume Analyzer
+- AI Hiring Report
+
+## ⚡ Installation
+
+```bash
+git clone https://github.com/DHEENADAYALAN-1/VettingZoo-Startup.git
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend
+
+```bash
+cd backend
 pip install -r requirements.txt
+uvicorn main:app --reload
+```
 
-2) Run the app:
-python -m streamlit run app.py
+## 🌐 Deployment
 
-USAGE
-1) Upload a resume PDF
-2) Paste job description
-3) See match score and recommendation
-4) Download report
+Frontend deployed on Vercel.
+
+## 👨‍💻 Author
+
+Dheenadayalan N
+Christ University
