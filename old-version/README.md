@@ -40,10 +40,17 @@ https://vetting-zoo-startup.vercel.app
 
 ## 📷 Product Screens
 
-- Landing Page
-- Recruiter Dashboard
-- Resume Analyzer
-- AI Hiring Report
+### Landing Page
+![Landing Page](screenshots/home.png)
+
+### Recruiter Dashboard
+![Recruiter Dashboard](screenshots/recruiter.png)
+
+### Resume Analyzer
+![Resume Analyzer](screenshots/analyzer.png)
+
+### AI Hiring Report
+![AI Hiring Report](screenshots/report.png)
 
 ## ⚡ Installation
 
