@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -12,29 +12,42 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const handleSignup = async () => {
+    setMessage("");
+    setSuccess(false);
+
+    if (!isSupabaseConfigured) {
+      setMessage("Signup is not configured yet: Supabase keys are missing.");
+      return;
+    }
     if (!email || !password) {
-      alert("Please enter email and password");
+      setMessage("Please enter your email and password.");
+      return;
+    }
+    if (password.length < 6) {
+      setMessage("Password must be at least 6 characters.");
       return;
     }
 
     setLoading(true);
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
+    const { data, error } = await supabase.auth.signUp({ email, password });
     setLoading(false);
 
     if (error) {
-      alert(error.message);
+      setMessage(error.message);
       return;
     }
 
-    alert("Account created. Now login.");
-    router.push("/login");
+    if (data.session) {
+      router.push("/recruiter");
+      return;
+    }
+
+    setSuccess(true);
+    setMessage("Account created. Check your email and click the confirmation link, then log in.");
   };
 
   return (
@@ -45,6 +58,18 @@ export default function SignupPage() {
         <p className="text-white/50 mb-8">
           Create your recruiter account for Vetting Zoo.
         </p>
+
+        {message && (
+          <div
+            className={`mb-4 rounded-xl border p-3 text-sm ${
+              success
+                ? "border-green-400/40 bg-green-400/10 text-green-200"
+                : "border-red-400/40 bg-red-400/10 text-red-200"
+            }`}
+          >
+            {message}
+          </div>
+        )}
 
         <input
           type="email"

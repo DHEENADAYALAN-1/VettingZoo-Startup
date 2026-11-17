@@ -1,7 +1,8 @@
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import re
+import tempfile
 from dotenv import load_dotenv
 import google.generativeai as genai
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -21,12 +22,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 load_dotenv()
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+MAX_FILE_MB = 10
 
 
-def safe_name(name: str) -> str:
-    return re.sub(r"[^A-Za-z0-9._-]", "_", os.path.basename(name or "resume.pdf"))
+async def read_resume_text(resume: UploadFile) -> str:
+    """Read an uploaded PDF and return its text. The file is never kept on the server."""
+    name = resume.filename or "resume.pdf"
+    if not name.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail=f"{name}: only PDF resumes are supported.")
+
+    content = await resume.read()
+    if len(content) > MAX_FILE_MB * 1024 * 1024:
+        raise HTTPException(status_code=400, detail=f"{name}: file is larger than {MAX_FILE_MB} MB.")
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    try:
+        tmp.write(content)
+        tmp.close()
+        text = extract_text_from_pdf(tmp.name)
+    finally:
+        try:
+            os.remove(tmp.name)
+        except OSError:
+            pass
+
+    if not text.strip():
+        raise HTTPException(
+            status_code=400,
+            detail=f"{name}: could not read any text. Please upload a text-based PDF, not a scanned image.",
+        )
+    return text
 
 
 
@@ -214,22 +239,10 @@ async def analyze_resume(
     resume: UploadFile = File(...),
     job_description: str = Form(...)
 ):
-    file_path = os.path.join(UPLOAD_FOLDER, safe_name(resume.filename))
+    if not job_description.strip():
+        raise HTTPException(status_code=400, detail="Please paste a job description.")
 
-    with open(file_path, "wb") as f:
-        content = await resume.read()
-        f.write(content)
-
-    if resume.filename.lower().endswith(".pdf"):
-        resume_text = extract_text_from_pdf(file_path)
-    else:
-        return {"error": "Currently only PDF resumes are supported."}
-
-    if not resume_text.strip():
-        return {
-            "error": "Could not extract text from this PDF. Please upload a text-based resume PDF."
-        }
-
+    resume_text = await read_resume_text(resume)
     result = calculate_match(resume_text, job_description)
 
     return {
@@ -243,37 +256,35 @@ async def analyze_multiple_resumes(
     resumes: list[UploadFile] = File(...),
     job_description: str = Form(...)
 ):
+    if not job_description.strip():
+        raise HTTPException(status_code=400, detail="Please paste a job description.")
+
     all_results = []
+    skipped = []
 
     for resume in resumes:
-        file_path = os.path.join(UPLOAD_FOLDER, safe_name(resume.filename))
-
-        with open(file_path, "wb") as f:
-            content = await resume.read()
-            f.write(content)
-
-        if resume.filename.lower().endswith(".pdf"):
-            resume_text = extract_text_from_pdf(file_path)
-        else:
-            continue
-
-        if not resume_text.strip():
+        try:
+            resume_text = await read_resume_text(resume)
+        except HTTPException as e:
+            skipped.append(e.detail)
             continue
 
         result = calculate_match(resume_text, job_description)
-
         all_results.append({
             "filename": resume.filename,
             **result
         })
 
-    ranked_results = sorted(
-        all_results,
-        key=lambda x: x["score"],
-        reverse=True
-    )
+    if not all_results:
+        raise HTTPException(
+            status_code=400,
+            detail="No readable PDF resumes. " + " ".join(skipped),
+        )
+
+    ranked_results = sorted(all_results, key=lambda x: x["score"], reverse=True)
 
     return {
         "total_candidates": len(ranked_results),
-        "rankings": ranked_results
+        "rankings": ranked_results,
+        "skipped": skipped,
     }

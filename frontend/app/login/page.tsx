@@ -1,166 +1,160 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect } from "react";
-
 
 export default function LoginPage() {
   const router = useRouter();
-  useEffect(() => {
-  checkSession();
-}, []);
-
-const checkSession = async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (session) {
-    router.push("/recruiter");
-  }
-};
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.push("/recruiter");
+    });
+  }, [router]);
 
   const handleLogin = async () => {
+    setMessage("");
+
+    if (!isSupabaseConfigured) {
+      setMessage("Login is not configured yet: Supabase keys are missing.");
+      return;
+    }
     if (!email || !password) {
-      alert("Please enter email and password");
+      setMessage("Please enter your email and password.");
       return;
     }
 
     setLoading(true);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
 
     if (error) {
-      alert(error.message);
+      setMessage(error.message);
       return;
     }
-
     router.push("/recruiter");
   };
 
   const handleGoogleLogin = async () => {
+    setMessage("");
+
+    if (!isSupabaseConfigured) {
+      setMessage("Login is not configured yet: Supabase keys are missing.");
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/recruiter`,
-      },
+      options: { redirectTo: `${window.location.origin}/recruiter` },
     });
-
-    if (error) {
-      alert(error.message);
-    }
+    if (error) setMessage(error.message);
   };
 
   return (
     <main
-  className="min-h-screen text-white flex items-center justify-center px-6 bg-cover bg-center"
-  style={{
-    backgroundImage:
-      "linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('/login-bg.jpg')",
-  }}
-  
->
-      <div className="w-full flex justify-center mb-10">
-      <h1
-    className="text-8xl text-white leading-none"
-    style={{
-      fontFamily: "'Dancing Script', cursive",
-    }}
-  >
-    Sign In
-  </h1>
-        <div className="max-w-3xl mx-auto">
-          <label className="block text-2xl mb-4 font-semibold">
-            Email address
-          </label>
+      className="relative min-h-screen text-white flex items-center justify-center px-6 py-16 bg-cover bg-center"
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('/login-bg.jpg')",
+      }}
+    >
+      <Link
+        href="/"
+        className="absolute top-8 left-8 text-white/70 hover:text-white font-semibold"
+      >
+        ← Back to Home
+      </Link>
 
+      <div className="w-full max-w-md">
+        <h1
+          className="text-center text-7xl leading-none mb-10"
+          style={{ fontFamily: "'Dancing Script', cursive" }}
+        >
+          Sign In
+        </h1>
+
+        {!isSupabaseConfigured && (
+          <div className="mb-6 rounded-xl border border-yellow-400/40 bg-yellow-400/10 p-4 text-yellow-200 text-sm">
+            Supabase keys are missing, so login cannot work yet. Add
+            NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.
+          </div>
+        )}
+
+        {message && (
+          <div className="mb-6 rounded-xl border border-red-400/40 bg-red-400/10 p-4 text-red-200 text-sm">
+            {message}
+          </div>
+        )}
+
+        <label className="block text-lg mb-2 font-semibold">Email address</label>
+        <input
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+          className="w-full h-14 px-5 text-lg rounded-xl bg-white text-black outline-none mb-6"
+        />
+
+        <label className="block text-lg mb-2 font-semibold">Password</label>
+        <div className="relative mb-8">
           <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full h-20 px-8 text-2xl rounded-xl bg-white text-black outline-none mb-10"
+            type={showPassword ? "text" : "password"}
+            placeholder="Enter password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            className="w-full h-14 px-5 pr-14 text-lg rounded-xl bg-white text-black outline-none"
           />
-
-          <label className="block text-2xl mb-4 font-semibold">
-            Password
-          </label>
-
-          <div className="relative mb-10">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-20 px-8 pr-20 text-2xl rounded-xl bg-white text-black outline-none"
-            />
-
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500"
-            >
-              {showPassword ? (
-                <EyeOff size={34} />
-              ) : (
-                <Eye size={34} />
-              )}
-            </button>
-          </div>
-
           <button
-            onClick={handleLogin}
-            disabled={loading}
-            className="w-full h-20 rounded-xl bg-white text-black text-3xl font-black hover:opacity-90 transition"
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            {loading ? "Logging in..." : "LOGIN"}
+            {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
           </button>
-
-          <div className="flex items-center gap-6 my-12">
-            <div className="flex-1 h-[1px] bg-white/20" />
-            <span className="text-2xl font-semibold">OR</span>
-            <div className="flex-1 h-[1px] bg-white/20" />
-          </div>
-
-          <button
-            onClick={handleGoogleLogin}
-            className="w-full h-20 border border-white/30 rounded-xl flex items-center justify-center gap-5 text-2xl font-bold hover:bg-white hover:text-black transition"
-          >
-            <FcGoogle size={38} />
-            CONTINUE WITH GOOGLE
-          </button>
-
-          <p className="text-center mt-12 text-2xl text-white/70">
-            New recruiter?{" "}
-            <Link
-              href="/signup"
-              className="text-blue-400 font-bold hover:underline"
-            >
-              CREATE ACCOUNT
-            </Link>
-            <Link
-  href="/"
-  className="absolute top-8 left-8 text-white/70 hover:text-white font-semibold"
->
-  ← Back to Home
-</Link>
-          </p>
         </div>
+
+        <button
+          onClick={handleLogin}
+          disabled={loading}
+          className="w-full h-14 rounded-xl bg-white text-black text-xl font-black hover:opacity-90 transition disabled:opacity-60"
+        >
+          {loading ? "Logging in..." : "LOGIN"}
+        </button>
+
+        <div className="flex items-center gap-4 my-8">
+          <div className="flex-1 h-px bg-white/20" />
+          <span className="font-semibold">OR</span>
+          <div className="flex-1 h-px bg-white/20" />
+        </div>
+
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full h-14 border border-white/30 rounded-xl flex items-center justify-center gap-3 text-lg font-bold hover:bg-white hover:text-black transition"
+        >
+          <FcGoogle size={26} />
+          CONTINUE WITH GOOGLE
+        </button>
+
+        <p className="text-center mt-8 text-white/70">
+          New recruiter?{" "}
+          <Link href="/signup" className="text-blue-400 font-bold hover:underline">
+            CREATE ACCOUNT
+          </Link>
+        </p>
       </div>
     </main>
   );

@@ -12,6 +12,17 @@ import {
   Users,
 } from "lucide-react";
 
+const getErrorMessage = (error: any) => {
+  if (error?.response?.data?.detail) {
+    const d = error.response.data.detail;
+    return typeof d === "string" ? d : "Please check your file and job description.";
+  }
+  if (error?.code === "ECONNABORTED" || !error?.response) {
+    return "Could not reach the server. It may be waking up, so wait a minute and try again.";
+  }
+  return "Something went wrong. Please try again.";
+};
+
 export default function RecruiterPage() {
   const router = useRouter();
 
@@ -65,13 +76,17 @@ export default function RecruiterPage() {
 
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL ?? "https://vettingzoo-startup.onrender.com"}/analyze-multiple`,
-        formData
+        formData,
+        { timeout: 120000 }
       );
 
       setResults(response.data.rankings || []);
+      if (response.data.skipped?.length) {
+        alert("Some files were skipped:\n" + response.data.skipped.join("\n"));
+      }
     } catch (error) {
       console.error(error);
-      alert("Backend error. Check terminal.");
+      alert(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -191,7 +206,7 @@ export default function RecruiterPage() {
             disabled={loading}
             className="w-full mt-7 h-14 rounded-2xl bg-white text-black font-black text-lg hover:opacity-90 transition"
           >
-            {loading ? "Analyzing..." : "Rank Candidates"}
+            {loading ? "Analyzing (first run can take up to a minute)..." : "Rank Candidates"}
           </button>
         </section>
 

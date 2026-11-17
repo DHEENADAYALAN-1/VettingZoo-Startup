@@ -135,7 +135,7 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-  id="recruiters"
+  id="product"
   className="relative flex items-center"
   initial={{ opacity: 0, x: 40 }}
   animate={{ opacity: 1, x: 0 }}
