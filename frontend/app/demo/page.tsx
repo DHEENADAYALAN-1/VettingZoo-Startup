@@ -34,7 +34,7 @@ export default function DemoPage() {
 
     try {
       setLoading(true);
-      const response = await axios.post("http://https://vettingzoo-startup.onrender.com/analyze", formData);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL ?? "https://vettingzoo-startup.onrender.com"}/analyze`, formData);
       setResult(response.data);
     } catch (error) {
       console.error(error);

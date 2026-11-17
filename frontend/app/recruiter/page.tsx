@@ -64,7 +64,7 @@ export default function RecruiterPage() {
       setLoading(true);
 
       const response = await axios.post(
-        "http://https://vettingzoo-startup.onrender.com/analyze-multiple",
+        `${process.env.NEXT_PUBLIC_API_URL ?? "https://vettingzoo-startup.onrender.com"}/analyze-multiple`,
         formData
       );
 

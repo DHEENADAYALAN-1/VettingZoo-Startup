@@ -1,8 +1,11 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import re
 from dotenv import load_dotenv
 import google.generativeai as genai
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 from resume_parser import extract_text_from_pdf
@@ -22,9 +25,16 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
+def safe_name(name: str) -> str:
+    return re.sub(r"[^A-Za-z0-9._-]", "_", os.path.basename(name or "resume.pdf"))
 
-genai.configure(api_key=os.getenv("AIzaSyBeQqN7WYU8zwnD-pksIphwMfrKdMbf798"))
-gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+gemini_model = None
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+    gemini_model = genai.GenerativeModel(os.getenv("GEMINI_MODEL", "gemini-2.0-flash"))
 
 
 @app.get("/")
@@ -33,10 +43,15 @@ def home():
 
 
 def calculate_semantic_score(resume_text: str, job_description: str):
-    resume_embedding = model.encode(resume_text, convert_to_tensor=True)
-    jd_embedding = model.encode(job_description, convert_to_tensor=True)
-    similarity = util.cos_sim(resume_embedding, jd_embedding).item()
-    return round(similarity * 100, 2)
+    try:
+        vectors = TfidfVectorizer(stop_words="english").fit_transform(
+            [resume_text, job_description]
+        )
+        similarity = cosine_similarity(vectors[0], vectors[1])[0][0]
+        return round(float(similarity) * 100, 2)
+    except Exception as e:
+        print("SEMANTIC ERROR:", e)
+        return 0.0
 
 
 def generate_candidate_summary(resume_skills):
@@ -64,6 +79,8 @@ def generate_candidate_summary(resume_skills):
 
 
 def generate_ai_recruiter_insights(resume_text, job_description, matched_skills, missing_skills):
+    if gemini_model is None:
+        return "AI recruiter insights temporarily unavailable. Basic ATS analysis is still available."
     try:
         prompt = f"""
 You are an expert AI recruiter.
@@ -197,7 +214,7 @@ async def analyze_resume(
     resume: UploadFile = File(...),
     job_description: str = Form(...)
 ):
-    file_path = os.path.join(UPLOAD_FOLDER, resume.filename)
+    file_path = os.path.join(UPLOAD_FOLDER, safe_name(resume.filename))
 
     with open(file_path, "wb") as f:
         content = await resume.read()
@@ -229,7 +246,7 @@ async def analyze_multiple_resumes(
     all_results = []
 
     for resume in resumes:
-        file_path = os.path.join(UPLOAD_FOLDER, resume.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, safe_name(resume.filename))
 
         with open(file_path, "wb") as f:
             content = await resume.read()

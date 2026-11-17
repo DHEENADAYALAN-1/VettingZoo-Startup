@@ -57,7 +57,7 @@ const checkSession = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: "http://localhost:3000/recruiter",
+        redirectTo: `${window.location.origin}/recruiter`,
       },
     });
 
