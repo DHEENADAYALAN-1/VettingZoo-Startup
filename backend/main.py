@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import re
+import time
 import tempfile
 from dotenv import load_dotenv
 import google.generativeai as genai
@@ -63,10 +64,14 @@ GEMINI_MODELS = [m for m in [os.getenv("GEMINI_MODEL"), "gemini-2.5-flash", "gem
 _working_model = None
 
 
+_cooldown_until = 0.0
+CALL_OPTIONS = {"timeout": 8, "retry": None}  # never let one Gemini call hang the request
+
+
 def discover_models():
     """Ask Google which models this key can use for text generation (flash models first)."""
     try:
-        names = [m.name.replace("models/", "") for m in genai.list_models()
+        names = [m.name.replace("models/", "") for m in genai.list_models(request_options=CALL_OPTIONS)
                  if "generateContent" in m.supported_generation_methods]
     except Exception:
         return []
@@ -75,35 +80,47 @@ def discover_models():
     return flash or names
 
 
-def call_gemini(prompt: str, errors: dict = None) -> str:
-    """Try each model until one answers, and remember the one that works."""
-    global _working_model
+def call_gemini(prompt: str, errors: dict = None, budget: float = 15.0) -> str:
+    """Try models within a strict time budget. After a total failure, skip Gemini for 5 minutes
+    so analyses stay fast instead of waiting on a broken AI call every time."""
+    global _working_model, _cooldown_until
     if not GEMINI_API_KEY:
         raise RuntimeError("GEMINI_API_KEY is not set")
+    diagnostic = errors is not None
+    if not diagnostic and time.time() < _cooldown_until:
+        raise RuntimeError("Gemini is cooling down after recent failures")
     errors = errors if errors is not None else {}
+    deadline = time.time() + (budget if not diagnostic else 30.0)
     tried = []
+    fatal = False
 
     def attempt(name):
+        nonlocal fatal
         global _working_model
-        if name in tried:
+        if name in tried or fatal or time.time() > deadline:
             return None
         tried.append(name)
         try:
-            text = genai.GenerativeModel(name).generate_content(prompt).text
+            text = genai.GenerativeModel(name).generate_content(prompt, request_options=CALL_OPTIONS).text
             _working_model = name
             return text
         except Exception as e:
-            errors[name] = str(e)[:160]
+            msg = str(e)
+            errors[name] = msg[:160]
+            if any(k in msg for k in ("403", "429", "API key", "quota", "PERMISSION")):
+                fatal = True  # a key or quota problem will fail on every model
             return None
 
     for name in ([_working_model] if _working_model else []) + GEMINI_MODELS:
         text = attempt(name)
         if text:
             return text
-    for name in discover_models()[:6]:
-        text = attempt(name)
-        if text:
-            return text
+    if not fatal:
+        for name in discover_models()[:6]:
+            text = attempt(name)
+            if text:
+                return text
+    _cooldown_until = time.time() + 300
     raise RuntimeError("No Gemini model answered")
 
 
@@ -119,6 +136,23 @@ def ai_check():
     except Exception as e:
         return {"configured": True, "ok": False, "error": str(e), "errors_by_model": errors,
                 "models_your_key_can_use": discover_models()[:12]}
+
+
+@app.get("/")
+def home():
+    return {"message": "Vetting Zoo AI Backend is running"}
+
+
+def calculate_semantic_score(resume_text: str, job_description: str):
+    try:
+        vectors = TfidfVectorizer(stop_words="english").fit_transform(
+            [resume_text, job_description]
+        )
+        similarity = cosine_similarity(vectors[0], vectors[1])[0][0]
+        return round(float(similarity) * 100, 2)
+    except Exception as e:
+        print("SEMANTIC ERROR:", e)
+        return 0.0
 
 
 def find_evidence(text: str, skills, per_skill: int = 2):
@@ -307,7 +341,10 @@ async def analyze_resume(
         raise HTTPException(status_code=400, detail="Please paste a job description.")
 
     resume_text = await read_resume_text(resume)
-    result = calculate_match(resume_text, job_description)
+    try:
+        result = calculate_match(resume_text, job_description)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)[:120]}")
 
     return {
         "filename": resume.filename,
@@ -333,7 +370,11 @@ async def analyze_multiple_resumes(
             skipped.append(e.detail)
             continue
 
-        result = calculate_match(resume_text, job_description)
+        try:
+            result = calculate_match(resume_text, job_description)
+        except Exception as e:
+            skipped.append(f"{resume.filename}: analysis failed ({str(e)[:80]})")
+            continue
         all_results.append({
             "filename": resume.filename,
             **result
