@@ -1,32 +1,49 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Playwrite+MX+Guides&display=swap');
 @import "tailwindcss";
 
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root { color-scheme: dark; }
+html { scroll-behavior: smooth; background: #02040a; }
+body { background: transparent; color: #e8eefc; isolation: isolate; font-family: var(--font-manrope), system-ui, sans-serif; overflow-x: hidden; }
+
+h1, h2, h3 { font-family: var(--font-sora), system-ui, sans-serif; letter-spacing: -0.02em; }
+h1, .text-fade {
+  background: linear-gradient(180deg, #ffffff 35%, rgba(255,255,255,.5));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---------- Glass cards: any element using the old translucent-white card colors ---------- */
+[class*="bg-white/[0.04]"], [class*="bg-white/[0.05]"] {
+  background: linear-gradient(160deg, rgba(37,99,235,.16), rgba(6,12,30,.62) 55%);
+  border-color: rgba(96,165,250,.26);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: inset 0 1px 0 rgba(147,197,253,.18), 0 24px 60px -34px rgba(37,99,235,.7);
 }
-html {
-  scroll-behavior: smooth;
+
+/* ---------- Moving glow background ---------- */
+.glow-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: #02040a; }
+.glow-bg::before {
+  content: ""; position: absolute; inset: 0; animation: breathe 7s ease-in-out infinite alternate;
+  background:
+    radial-gradient(60% 50% at 12% 95%, rgba(29,78,216,.40), transparent 70%),
+    radial-gradient(50% 40% at 92% 8%, rgba(14,70,200,.30), transparent 70%);
 }
+.streak {
+  position: absolute; left: -30%; width: 160%; transform: rotate(-24deg); will-change: transform;
+  background: linear-gradient(90deg, transparent 0%, rgba(37,99,235,.7) 42%, rgba(147,197,253,.95) 55%, rgba(37,99,235,.45) 70%, transparent 100%);
+}
+.s1 { top: 52%; height: 200px; filter: blur(32px); animation: drift1 10s ease-in-out infinite alternate; }
+.s2 { top: 20%; height: 120px; filter: blur(34px); opacity: .8; animation: drift2 13s ease-in-out infinite alternate; }
+.s3 { top: 80%; height: 90px; filter: blur(30px); opacity: .75; animation: drift1 15s ease-in-out infinite alternate-reverse; }
+.s4 { top: 56%; height: 2px; filter: blur(1px); opacity: 1; animation: drift1 10s ease-in-out infinite alternate; }
+.orb { position: absolute; border-radius: 9999px; filter: blur(90px); background: rgba(37,99,235,.35); animation: floaty 12s ease-in-out infinite alternate; }
+.o1 { width: 40vw; height: 40vw; left: -10vw; top: -8vw; }
+.o2 { width: 34vw; height: 34vw; right: -8vw; bottom: -6vw; background: rgba(79,70,229,.28); animation-duration: 24s; }
+@keyframes drift1 { from { transform: rotate(-24deg) translate3d(-16%, -60px, 0); } to { transform: rotate(-24deg) translate3d(16%, 70px, 0); } }
+@keyframes drift2 { from { transform: rotate(-24deg) translate3d(14%, 50px, 0); } to { transform: rotate(-24deg) translate3d(-16%, -60px, 0); } }
+@keyframes breathe { from { opacity: .65; } to { opacity: 1; } }
+@keyframes floaty { to { transform: translate3d(6vw, -5vh, 0) scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { .streak, .orb, .glow-bg::before { animation-duration: 40s; } }

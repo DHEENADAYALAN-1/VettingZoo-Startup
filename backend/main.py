@@ -10,7 +10,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 from resume_parser import extract_text_from_pdf
-from skill_extractor import extract_skills
+from skill_extractor import extract_skills, SKILLS, _normalize, _contains
 
 app = FastAPI(title="Vetting Zoo Backend")
 
@@ -56,10 +56,40 @@ async def read_resume_text(resume: UploadFile) -> str:
 
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-gemini_model = None
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-    gemini_model = genai.GenerativeModel(os.getenv("GEMINI_MODEL", "gemini-2.0-flash"))
+
+GEMINI_MODELS = [m for m in [os.getenv("GEMINI_MODEL"), "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"] if m]
+_working_model = None
+
+
+def call_gemini(prompt: str) -> str:
+    """Try each model until one answers, and remember the one that works."""
+    global _working_model
+    if not GEMINI_API_KEY:
+        raise RuntimeError("GEMINI_API_KEY is not set")
+    order = ([_working_model] if _working_model else []) + [m for m in GEMINI_MODELS if m != _working_model]
+    last_error = None
+    for name in order:
+        try:
+            text = genai.GenerativeModel(name).generate_content(prompt).text
+            _working_model = name
+            return text
+        except Exception as e:
+            last_error = e
+    raise last_error
+
+
+@app.get("/ai-check")
+def ai_check():
+    """Open /ai-check in a browser to see whether Gemini is working, and why not if it isn't."""
+    if not GEMINI_API_KEY:
+        return {"configured": False, "ok": False, "error": "GEMINI_API_KEY is not set"}
+    try:
+        call_gemini("Reply with the single word OK.")
+        return {"configured": True, "ok": True, "model": _working_model}
+    except Exception as e:
+        return {"configured": True, "ok": False, "error": str(e)[:300]}
 
 
 @app.get("/")
@@ -79,32 +109,50 @@ def calculate_semantic_score(resume_text: str, job_description: str):
         return 0.0
 
 
-def generate_candidate_summary(resume_skills):
-    summary = []
+def find_evidence(text: str, skills, per_skill: int = 2):
+    """For each skill, return up to 2 resume lines that show it (prefers descriptive lines)."""
+    lines = [re.sub(r"\s+", " ", l).strip(" -\u2022\u2013\u2014\t") for l in text.splitlines()]
+    lines = [l for l in lines if len(l) > 3]
+    evidence = {}
+    for skill in skills:
+        terms = [skill, *SKILLS.get(skill, [])]
+        hits = [l for l in lines if any(_contains(_normalize(l), t) for t in terms)]
+        hits.sort(key=lambda l: len(l) < 60)  # long, descriptive lines first
+        if hits:
+            evidence[skill] = [h[:220] for h in hits[:per_skill]]
+    return evidence
 
+
+def generate_candidate_summary(resume_skills, matched=None, missing=None):
+    matched = matched or []
+    missing = missing or []
+    parts = []
+    total = len(matched) + len(missing)
+
+    if total:
+        line = f"Covers {len(matched)} of the {total} skills the role asks for"
+        line += f", including {', '.join(matched[:4])}." if matched else "."
+        parts.append(line)
+        parts.append(f"Not found on the resume: {', '.join(missing[:4])}." if missing else "No required skills are missing.")
+
+    domain = []
     if "machine learning" in resume_skills or "nlp" in resume_skills:
-        summary.append("Demonstrates strong AI and machine learning exposure.")
-
-    if "python" in resume_skills:
-        summary.append("Shows solid backend and scripting capabilities using Python.")
-
-    if "sql" in resume_skills:
-        summary.append("Possesses strong database and analytical querying skills.")
-
+        domain.append("Shows AI and machine learning exposure.")
     if "docker" in resume_skills or "aws" in resume_skills:
-        summary.append("Understands cloud infrastructure and scalable deployment concepts.")
-
+        domain.append("Familiar with cloud and deployment tools.")
     if "react" in resume_skills or "javascript" in resume_skills:
-        summary.append("Capable of contributing to modern frontend application development.")
+        domain.append("Can work on modern frontends.")
+    if "sql" in resume_skills or "postgresql" in resume_skills:
+        domain.append("Has database and querying skills.")
+    parts.extend(domain[:2])
 
-    if not summary:
-        summary.append("Candidate has foundational technical exposure with growth potential.")
-
-    return " ".join(summary)
+    if not parts:
+        parts.append("Candidate has foundational technical exposure with growth potential.")
+    return " ".join(parts)
 
 
 def generate_ai_recruiter_insights(resume_text, job_description, matched_skills, missing_skills):
-    if gemini_model is None:
+    if not GEMINI_API_KEY:
         return "AI recruiter insights temporarily unavailable. Basic ATS analysis is still available."
     try:
         prompt = f"""
@@ -128,8 +176,7 @@ Generate a concise recruiter-friendly candidate summary only.
 Avoid markdown formatting.
 """
 
-        response = gemini_model.generate_content(prompt)
-        return response.text
+        return call_gemini(prompt)
 
     except Exception as e:
         print("GEMINI ERROR:", e)
@@ -137,6 +184,7 @@ Avoid markdown formatting.
 
 
 def calculate_match(resume_text: str, job_description: str):
+    original_text = resume_text
     resume_text = resume_text.lower()
     job_description = job_description.lower()
 
@@ -198,8 +246,10 @@ def calculate_match(resume_text: str, job_description: str):
         missing_skills,
     )
 
+    ai_source = "gemini"
     if "temporarily unavailable" in summary_text:
-        summary_text = generate_candidate_summary(resume_skills)
+        ai_source = "rules"
+        summary_text = generate_candidate_summary(resume_skills, matched_skills, missing_skills)
 
     interview_questions = [
         "Can you explain one project where you used your strongest technical skill?",
@@ -231,6 +281,8 @@ def calculate_match(resume_text: str, job_description: str):
         "strengths": strengths,
         "concerns": concerns,
         "interview_questions": interview_questions,
+        "evidence": find_evidence(original_text, matched_skills),
+        "ai_source": ai_source,
     }
 
 

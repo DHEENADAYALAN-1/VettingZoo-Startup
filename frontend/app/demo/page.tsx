@@ -3,10 +3,8 @@
 import { useRef, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
+import EvidenceChips from "../components/EvidenceChips";
 import { ArrowLeft, FileText, Printer, UploadCloud, X } from "lucide-react";
-import { Bricolage_Grotesque } from "next/font/google";
-
-const display = Bricolage_Grotesque({ subsets: ["latin"], weight: ["600", "800"] });
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "https://vettingzoo-startup.onrender.com";
 
@@ -65,17 +63,17 @@ export default function DemoPage() {
     <div>
       <div className="flex items-baseline justify-between">
         <p className="font-semibold">{label}</p>
-        <p className="text-2xl font-bold text-cyan-200">{value}%</p>
+        <p className="text-2xl font-bold text-sky-200">{value}%</p>
       </div>
       <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
-        <div className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-violet-400 bar" style={{ width: `${Math.min(value, 100)}%` }} />
+        <div className="h-full rounded-full bg-gradient-to-r from-sky-300 to-indigo-400 bar" style={{ width: `${Math.min(value, 100)}%` }} />
       </div>
       <p className="mt-2 text-sm text-white/45">{hint}</p>
     </div>
   );
 
   return (
-    <main className="min-h-screen bg-[#050816] text-white relative overflow-x-hidden">
+    <main className="min-h-screen bg-transparent text-white relative overflow-x-hidden">
       <style>{`
         .lined{background-image:repeating-linear-gradient(transparent,transparent 31px,rgba(255,255,255,.06) 31px,rgba(255,255,255,.06) 32px);background-attachment:local;line-height:32px}
         @keyframes sweep{0%{top:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
@@ -88,8 +86,6 @@ export default function DemoPage() {
         @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}.no-print{display:none!important}}
       `}</style>
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,#7c3aed38,transparent_38%),radial-gradient(circle_at_95%_90%,#06b6d433,transparent_40%)]" />
-
       <div className="relative z-10 mx-auto max-w-[1280px] px-6 py-8 lg:px-12">
         <nav className="no-print flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-white/60 hover:text-white">
@@ -97,12 +93,12 @@ export default function DemoPage() {
           </Link>
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Vetting Zoo" className="h-10 w-10 rounded-xl" />
-            <span className={`${display.className} text-xl font-extrabold`}>Vetting Zoo</span>
+            <span className={`font-display text-xl font-medium`}>Vetting Zoo</span>
           </div>
         </nav>
 
         <header className="no-print mt-14 max-w-3xl">
-          <h1 className={`${display.className} text-5xl font-extrabold leading-[1.05] sm:text-7xl`}>
+          <h1 className={`font-display text-5xl font-medium leading-[1.05] sm:text-7xl`}>
             Does this resume fit the role?
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-8 text-white/60">
@@ -116,10 +112,10 @@ export default function DemoPage() {
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={(e) => { e.preventDefault(); setDragging(false); pickFile(e.dataTransfer.files?.[0]); }}
-            className={`relative flex min-h-[340px] flex-col overflow-hidden rounded-3xl border bg-white/[0.04] ${dragging ? "border-cyan-300" : "border-white/10"}`}
+            className={`relative flex min-h-[340px] flex-col overflow-hidden rounded-3xl border bg-white/[0.04] ${dragging ? "border-sky-300" : "border-white/10"}`}
           >
             <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
-              <p className={`${display.className} text-lg font-semibold`}>Resume</p>
+              <p className={`font-display text-lg font-semibold`}>Resume</p>
               {resume && (
                 <button onClick={() => setResume(null)} aria-label="Remove resume" className="text-white/40 hover:text-white">
                   <X className="h-5 w-5" />
@@ -129,23 +125,23 @@ export default function DemoPage() {
             <input ref={fileRef} type="file" accept=".pdf,application/pdf" hidden onChange={(e) => pickFile(e.target.files?.[0])} />
             <button
               onClick={() => fileRef.current?.click()}
-              className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+              className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300"
             >
               {resume ? (
                 <>
-                  <FileText className="h-12 w-12 text-cyan-300" />
+                  <FileText className="h-12 w-12 text-sky-300" />
                   <span className="break-all text-lg font-semibold">{resume.name}</span>
                   <span className="text-sm text-white/45">{(resume.size / 1024).toFixed(0)} KB. Click to replace.</span>
                 </>
               ) : (
                 <>
-                  <UploadCloud className="h-12 w-12 text-cyan-300" />
+                  <UploadCloud className="h-12 w-12 text-sky-300" />
                   <span className="text-lg font-semibold">Drop a PDF here, or click to choose</span>
                   <span className="text-sm text-white/45">Text-based PDFs only, up to 10 MB</span>
                 </>
               )}
             </button>
-            {loading && <div className="beam absolute left-0 right-0 h-16 bg-gradient-to-b from-transparent via-cyan-300/25 to-transparent border-b border-cyan-300/70" />}
+            {loading && <div className="beam absolute left-0 right-0 h-16 bg-gradient-to-b from-transparent via-sky-300/25 to-transparent border-b border-sky-300/70" />}
           </div>
 
           {/* Dial */}
@@ -167,14 +163,14 @@ export default function DemoPage() {
                 )}
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`${display.className} text-6xl font-extrabold`}>{loading ? "…" : result ? score : "–"}</span>
+                <span className={`font-display text-6xl font-medium`}>{loading ? "…" : result ? score : "–"}</span>
                 <span className="text-sm text-white/50">{loading ? "Reading" : result ? "percent match" : "no score yet"}</span>
               </div>
             </div>
             <button
               onClick={handleAnalyze}
               disabled={loading}
-              className="w-full rounded-full bg-white px-6 py-4 font-bold text-black transition hover:bg-cyan-200 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+              className="w-full rounded-full bg-white px-6 py-4 font-bold text-black transition hover:bg-sky-200 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300"
             >
               {loading ? "Analyzing…" : result ? "Analyze again" : "Check the match"}
             </button>
@@ -184,7 +180,7 @@ export default function DemoPage() {
 
           <div className="flex min-h-[340px] flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04]">
             <div className="border-b border-white/10 px-6 py-4">
-              <p className={`${display.className} text-lg font-semibold`}>Job description</p>
+              <p className={`font-display text-lg font-semibold`}>Job description</p>
             </div>
             <textarea
               value={jobDescription}
@@ -200,7 +196,7 @@ export default function DemoPage() {
           <section ref={reportRef} className="mt-20 scroll-mt-8">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h2 className={`${display.className} text-4xl font-extrabold sm:text-5xl`}>{score}% match for this role</h2>
+                <h2 className={`font-display text-4xl font-medium sm:text-5xl`}>{score}% match for this role</h2>
                 <p className="mt-3 max-w-2xl text-lg leading-8 text-white/60">{result.recommendation}</p>
               </div>
               <button onClick={() => window.print()} className="no-print flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 font-semibold hover:bg-white hover:text-black">
@@ -210,16 +206,14 @@ export default function DemoPage() {
 
             <div className="mt-10 grid overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] md:grid-cols-2">
               <div className="p-7">
-                <p className={`${display.className} text-xl font-semibold text-cyan-200`}>Found in the resume</p>
+                <p className={`font-display text-xl font-semibold text-sky-200`}>Found in the resume</p>
                 <p className="mt-1 text-sm text-white/45">{matched.length} of {matched.length + missing.length} skills the role asks for</p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {matched.length ? matched.map((s) => (
-                    <span key={s} className="rounded-full bg-cyan-300/12 px-4 py-1.5 text-cyan-100 ring-1 ring-cyan-300/30">{s}</span>
-                  )) : <p className="text-white/45">No required skills found.</p>}
+                <div className="mt-5">
+                  {matched.length ? <EvidenceChips skills={matched} evidence={result.evidence} /> : <p className="text-white/45">No required skills found.</p>}
                 </div>
               </div>
               <div className="border-t border-white/10 p-7 md:border-l md:border-t-0">
-                <p className={`${display.className} text-xl font-semibold text-rose-200`}>Not found</p>
+                <p className={`font-display text-xl font-semibold text-rose-200`}>Not found</p>
                 <p className="mt-1 text-sm text-white/45">Gaps to ask about or train for</p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   {missing.length ? missing.map((s) => (
@@ -230,8 +224,8 @@ export default function DemoPage() {
             </div>
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">
-              <div className="rounded-3xl border border-violet-300/20 bg-violet-400/[0.06] p-7">
-                <p className={`${display.className} text-xl font-semibold text-violet-200`}>Recruiter summary</p>
+              <div className="rounded-3xl border border-indigo-300/20 bg-indigo-400/[0.06] p-7">
+                <p className={`font-display text-xl font-semibold text-indigo-200`}>Recruiter summary</p>
                 <p className="mt-4 leading-8 text-white/75">{result.ai_insight}</p>
                 <p className="mt-4 leading-8 text-white/55">{result.candidate_summary}</p>
               </div>
@@ -243,21 +237,21 @@ export default function DemoPage() {
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">
               <div className="rounded-3xl border border-emerald-300/20 bg-emerald-400/[0.05] p-7">
-                <p className={`${display.className} text-xl font-semibold text-emerald-200`}>Strengths</p>
+                <p className={`font-display text-xl font-semibold text-emerald-200`}>Strengths</p>
                 <ul className="mt-4 space-y-2 text-white/75">{(result.strengths || []).map((t: string) => <li key={t}>{t}</li>)}</ul>
               </div>
               <div className="rounded-3xl border border-amber-300/20 bg-amber-400/[0.05] p-7">
-                <p className={`${display.className} text-xl font-semibold text-amber-200`}>Concerns</p>
+                <p className={`font-display text-xl font-semibold text-amber-200`}>Concerns</p>
                 <ul className="mt-4 space-y-2 text-white/75">{(result.concerns || []).map((t: string) => <li key={t}>{t}</li>)}</ul>
               </div>
             </div>
 
             <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-7">
-              <p className={`${display.className} text-xl font-semibold`}>Questions to ask in the interview</p>
+              <p className={`font-display text-xl font-semibold`}>Questions to ask in the interview</p>
               <ol className="mt-5 grid gap-x-10 gap-y-4 md:grid-cols-2">
                 {(result.interview_questions || []).map((q: string, i: number) => (
                   <li key={i} className="flex gap-3 leading-7 text-white/75">
-                    <span className="font-bold text-cyan-300">Q{i + 1}</span>
+                    <span className="font-bold text-sky-300">Q{i + 1}</span>
                     <span>{q}</span>
                   </li>
                 ))}

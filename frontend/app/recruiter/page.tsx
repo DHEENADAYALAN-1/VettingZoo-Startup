@@ -4,12 +4,17 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import Arena from "./Arena";
+import EvidenceChips from "../components/EvidenceChips";
 import {
   LogOut,
   UploadCloud,
   Trophy,
   FileText,
   Users,
+  Scale,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 const getErrorMessage = (error: any) => {
@@ -33,6 +38,13 @@ export default function RecruiterPage() {
   const [jobDescription, setJobDescription] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState<number[]>([]);
+  const [blind, setBlind] = useState(false);
+  const [arenaOpen, setArenaOpen] = useState(false);
+
+  const nameOf = (i: number) => (blind ? `Candidate ${String.fromCharCode(65 + i)}` : results[i]?.filename);
+  const toggleSelect = (i: number) =>
+    setSelected((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : prev.length < 3 ? [...prev, i] : prev));
 
   useEffect(() => {
     checkUser();
@@ -81,6 +93,7 @@ export default function RecruiterPage() {
       );
 
       setResults(response.data.rankings || []);
+      setSelected([]);
       if (response.data.skipped?.length) {
         alert("Some files were skipped:\n" + response.data.skipped.join("\n"));
       }
@@ -94,14 +107,14 @@ export default function RecruiterPage() {
 
   if (authLoading) {
     return (
-      <main className="min-h-screen bg-[#050816] flex items-center justify-center text-white text-2xl font-bold">
+      <main className="min-h-screen bg-transparent flex items-center justify-center text-white text-2xl font-bold">
         Loading...
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#050816] text-white">
+    <main className="min-h-screen bg-transparent text-white">
       <header className="w-full border-b border-white/10 px-10 py-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
   <img
@@ -111,7 +124,7 @@ export default function RecruiterPage() {
   />
 
   <div>
-    <h1 className="text-4xl font-black">
+    <h1 className="text-4xl font-semibold">
       Vetting Zoo
     </h1>
 
@@ -127,7 +140,7 @@ export default function RecruiterPage() {
               Signed in as
             </p>
 
-            <p className="text-cyan-300 text-sm">
+            <p className="text-sky-300 text-sm">
               {userEmail}
             </p>
           </div>
@@ -144,9 +157,9 @@ export default function RecruiterPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-[420px_1fr] gap-8 px-10 py-10">
-        <section className="bg-[#0c1224] border border-white/10 rounded-3xl p-7 h-fit">
-          <h2 className="text-3xl font-black mb-3">
+      <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 lg:gap-8 px-4 sm:px-6 lg:px-10 py-6 lg:py-10">
+        <section className="bg-white/[0.04] border border-white/10 rounded-3xl p-7 h-fit">
+          <h2 className="text-3xl font-semibold mb-3">
             AI Resume Screening
           </h2>
 
@@ -154,15 +167,15 @@ export default function RecruiterPage() {
             Upload resumes and compare candidates against job descriptions.
           </p>
 
-          <div className="border border-dashed border-cyan-300/20 rounded-2xl p-8 text-center bg-[#08101f]">
-            <UploadCloud className="mx-auto text-cyan-300 mb-4" size={48} />
+          <div className="border border-dashed border-sky-300/20 rounded-2xl p-8 text-center bg-white/[0.04]">
+            <UploadCloud className="mx-auto text-sky-300 mb-4" size={48} />
 
         <p className="text-white text-lg font-semibold mt-5">
   Upload one or multiple PDF resumes
 </p>
 
-<p className="text-cyan-300 text-base font-medium mt-3 leading-7">
-  Hold <span className="font-black text-cyan-200">Ctrl</span> and select multiple resumes
+<p className="text-sky-300 text-base font-medium mt-3 leading-7">
+  Hold <span className="font-semibold text-sky-200">Ctrl</span> and select multiple resumes
 </p>
 
             <input
@@ -197,23 +210,23 @@ export default function RecruiterPage() {
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               placeholder="Paste job description here..."
-              className="w-full h-56 mt-3 rounded-2xl bg-[#08101f] border border-white/10 p-5 outline-none resize-none"
+              className="w-full h-56 mt-3 rounded-2xl bg-white/[0.04] border border-white/10 p-5 outline-none resize-none"
             />
           </div>
 
           <button
             onClick={handleAnalyze}
             disabled={loading}
-            className="w-full mt-7 h-14 rounded-2xl bg-white text-black font-black text-lg hover:opacity-90 transition"
+            className="w-full mt-7 h-14 rounded-2xl bg-white text-black font-semibold text-lg hover:opacity-90 transition"
           >
             {loading ? "Analyzing (first run can take up to a minute)..." : "Rank Candidates"}
           </button>
         </section>
 
-        <section className="bg-[#0c1224] border border-white/10 rounded-3xl p-7 min-h-[700px]">
+        <section className="bg-white/[0.04] border border-white/10 rounded-3xl p-5 sm:p-7 lg:min-h-[700px]">
           <div className="flex items-center justify-between mb-8">
   <div>
-    <h2 className="text-4xl font-black">
+    <h2 className="text-4xl font-semibold">
       Candidate Rankings
     </h2>
 
@@ -225,15 +238,35 @@ export default function RecruiterPage() {
   <img
     src="/mascot.png"
     alt="Mascot"
-    className="w-28 h-28 object-contain"
+    className="w-16 h-16 sm:w-28 sm:h-28 object-contain"
   />
 </div>
 
+          {results.length > 0 && (
+            <div className="mb-6 flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setBlind(!blind)}
+                className="flex items-center gap-2 rounded-full border border-white/20 px-5 py-3 font-semibold hover:bg-white/10"
+              >
+                {blind ? <EyeOff size={18} /> : <Eye size={18} />}
+                {blind ? "Blind mode: on" : "Blind mode: off"}
+              </button>
+              <button
+                onClick={() => setArenaOpen(true)}
+                disabled={selected.length < 2}
+                className="flex items-center gap-2 rounded-full bg-white px-5 py-3 font-bold text-black disabled:opacity-40"
+              >
+                <Scale size={18} /> Compare in Arena ({selected.length}/3)
+              </button>
+              <p className="text-sm text-white/45">Tick 2 or 3 candidates to compare them head to head.</p>
+            </div>
+          )}
+
           {results.length === 0 ? (
-            <div className="h-[550px] border border-white/10 rounded-3xl flex flex-col items-center justify-center text-center bg-[#08101f]">
+            <div className="h-[320px] lg:h-[550px] border border-white/10 rounded-3xl flex flex-col items-center justify-center text-center bg-white/[0.04]">
               <Users size={60} className="text-white/20 mb-5" />
 
-              <h3 className="text-3xl font-black">
+              <h3 className="text-3xl font-semibold">
                 No candidates ranked yet
               </h3>
 
@@ -246,32 +279,31 @@ export default function RecruiterPage() {
               {results.map((candidate, index) => (
                 <div
                   key={index}
-                  className="border border-white/10 rounded-3xl bg-[#08101f] p-6"
+                  className="border border-white/10 rounded-3xl bg-white/[0.04] p-6"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-white/40 text-sm">
-                        Rank #{index + 1}
-                      </p>
+                      <label className="flex cursor-pointer items-center gap-3 text-sm text-white/55">
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(index)}
+                          onChange={() => toggleSelect(index)}
+                          className="h-4 w-4 accent-sky-300"
+                        />
+                        Rank #{index + 1}. Select to compare
+                      </label>
 
-                      <h3 className="text-3xl font-black mt-2">
-                        {candidate.filename}
+                      <h3 className="text-3xl font-semibold mt-2">
+                        {nameOf(index)}
                       </h3>
 
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {candidate.matched_skills?.map((skill: string) => (
-                          <span
-                            key={skill}
-                            className="px-3 py-1 rounded-full bg-cyan-300/10 text-cyan-200 text-sm"
-                          >
-                            {skill}
-                          </span>
-                        ))}
+                      <div className="mt-4">
+                        <EvidenceChips skills={candidate.matched_skills || []} evidence={candidate.evidence} />
                       </div>
                     </div>
 
                     <div className="text-right">
-                      <div className="text-5xl font-black text-cyan-300">
+                      <div className="text-5xl font-semibold text-sky-300">
                         {candidate.score}%
                       </div>
 
@@ -290,6 +322,14 @@ export default function RecruiterPage() {
           )}
         </section>
       </div>
+      {arenaOpen && selected.length >= 2 && (
+        <Arena
+          candidates={selected.map((i) => results[i])}
+          names={selected.map((i) => nameOf(i))}
+          blind={blind}
+          onClose={() => setArenaOpen(false)}
+        />
+      )}
     </main>
   );
 }

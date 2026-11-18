@@ -63,11 +63,7 @@ export default function LoginPage() {
 
   return (
     <main
-      className="relative min-h-screen text-white flex items-center justify-center px-6 py-16 bg-cover bg-center"
-      style={{
-        backgroundImage:
-          "linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('/login-bg.jpg')",
-      }}
+      className="relative min-h-screen text-white flex items-center justify-center px-6 py-16"
     >
       <Link
         href="/"
@@ -78,8 +74,8 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md">
         <h1
-          className="text-center text-7xl leading-none mb-10"
-          style={{ fontFamily: "'Dancing Script', cursive" }}
+          className="text-center text-5xl sm:text-6xl font-light leading-none mb-10"
+          
         >
           Sign In
         </h1>
@@ -130,7 +126,7 @@ export default function LoginPage() {
         <button
           onClick={handleLogin}
           disabled={loading}
-          className="w-full h-14 rounded-xl bg-white text-black text-xl font-black hover:opacity-90 transition disabled:opacity-60"
+          className="w-full h-14 rounded-xl bg-white text-black text-xl font-semibold hover:opacity-90 transition disabled:opacity-60"
         >
           {loading ? "Logging in..." : "LOGIN"}
         </button>

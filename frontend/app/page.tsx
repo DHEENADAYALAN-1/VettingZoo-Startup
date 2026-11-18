@@ -14,42 +14,34 @@ import {
   SearchCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Smooch_Sans } from "next/font/google";
-
-const smooch = Smooch_Sans({
-  subsets: ["latin"],
-  weight: ["600", "700", "800", "900"],
-});
+import { Menu as MenuIcon, X as CloseIcon } from "lucide-react";
+import { useState } from "react";
 
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <main className="min-h-screen bg-[#050816] text-white overflow-hidden">
+    <main className="min-h-screen bg-transparent text-white overflow-hidden">
       <section
   id="home"
   className="relative min-h-screen flex items-center justify-center overflow-hidden"
 >
-       <div
-  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-  style={{
-    backgroundImage: "url('/bg.jpg')",
-  }}
-/>
+       
 
-<div className="absolute inset-0 bg-[#020617]/65" />
 
-       <nav className="fixed top-0 left-0 z-50 w-full flex items-center justify-between px-16 py-7 border-b border-white/10 bg-[#050816]/80 backdrop-blur-xl">
-  <Link href="/" className="flex items-center gap-5">
+
+       <nav className="fixed top-0 left-0 z-50 w-full flex items-center justify-between px-5 sm:px-10 lg:px-16 py-4 lg:py-5 border-b border-white/10 bg-[#02040a]/60 backdrop-blur-xl">
+  <Link href="/" className="flex items-center gap-3 lg:gap-5">
     <img
       src="/logo.png"
       alt="Vetting Zoo"
-      className="h-16 w-16 rounded-2xl object-cover"
+      className="h-11 w-11 lg:h-14 lg:w-14 rounded-2xl object-cover"
     />
 
-    <h1 className="text-6xl font-black text-white tracking-tight">
+    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-light text-white tracking-tight">
       Vetting Zoo
     </h1>
   </Link>
-<div className="hidden md:flex items-center gap-16 text-2xl font-semibold">
+<div className="hidden lg:flex items-center gap-8 xl:gap-12 text-lg xl:text-xl font-medium">
   <a href="#home" className="text-white/75 hover:text-white transition">
     Home
   </a>
@@ -66,30 +58,48 @@ export default function Home() {
     Recruiter Dashboard
   </Link>
 </div>
-  <Link
-    href="/login"
-    className="px-10 py-4 rounded-full border border-cyan-300/25 bg-cyan-300/10 text-cyan-200 text-xl font-bold hover:bg-white hover:text-black hover:shadow-[0_0_30px_rgba(255,255,255,0.6)] transition"
-  >
-    Login
-  </Link>
+  <div className="flex items-center gap-3">
+    <Link
+      href="/login"
+      className="px-5 sm:px-8 py-2.5 sm:py-3 rounded-full border border-sky-300/30 bg-sky-300/10 text-sky-200 text-base sm:text-lg font-semibold hover:bg-white hover:text-black transition"
+    >
+      Login
+    </Link>
+    <button
+      type="button"
+      onClick={() => setMenuOpen(!menuOpen)}
+      aria-label="Menu"
+      aria-expanded={menuOpen}
+      className="lg:hidden rounded-full border border-white/20 p-2.5"
+    >
+      {menuOpen ? <CloseIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+    </button>
+  </div>
 </nav>
+{menuOpen && (
+  <div className="lg:hidden fixed left-0 right-0 top-[72px] z-40 flex flex-col gap-1 border-b border-white/10 bg-[#02040a]/95 px-5 py-4 text-lg backdrop-blur-xl">
+    {[["#home","Home"],["#features","Features"],["/demo","Resume Analyzer"],["/recruiter","Recruiter Dashboard"]].map(([href,label]) => (
+      <a key={href} href={href} onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-white/80 hover:bg-white/10">{label}</a>
+    ))}
+  </div>
+)}
 
-        <div className="relative z-10 w-full pl-10 md:pl-20 pr-10 grid lg:grid-cols-2 gap-24 items-center pt-44">
+        <div className="relative z-10 w-full px-5 sm:px-10 lg:pl-20 lg:pr-10 grid lg:grid-cols-2 gap-12 lg:gap-24 items-center pt-32 lg:pt-44">
           <motion.div
             initial={{ opacity: 0, y: 45 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9 }}
           >
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-5 py-2 text-sm text-cyan-200 mb-7">
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/10 px-5 py-2 text-sm text-sky-200 mb-7">
               <Sparkles className="h-4 w-4" />
               AI Hiring Intelligence Platform
             </div>
 
             <h2
-  className={`${smooch.className} text-8xl md:text-[10rem] font-black leading-[1] tracking-[0.02em]`}
+  className={`font-display text-fade text-5xl sm:text-7xl xl:text-8xl font-light leading-[1.05] tracking-tight`}
 >
   Recruit smarter with
-  <span className="block animate-pulse bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">
+  <span className="block bg-gradient-to-r from-sky-300 via-blue-300 to-sky-300 bg-clip-text text-transparent">
     AI precision.
   </span>
 </h2>
@@ -103,7 +113,7 @@ export default function Home() {
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
               <Link
                 href="/demo"
-                className="group rounded-full bg-white text-black px-8 py-4 font-bold flex items-center justify-center gap-2 hover:bg-cyan-200 transition"
+                className="group rounded-full bg-white text-black px-8 py-4 font-bold flex items-center justify-center gap-2 hover:bg-sky-200 transition"
               >
                 Try AI Screening
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition" />
@@ -127,7 +137,7 @@ export default function Home() {
                   key={item[1]}
                   className="rounded-3xl border border-white/10 bg-white/[0.05] p-5"
                 >
-                  <h3 className="text-4xl font-black">{item[0]}</h3>
+                  <h3 className="text-4xl font-semibold">{item[0]}</h3>
                   <p className="text-sm text-white/50 mt-2">{item[1]}</p>
                 </div>
               ))}
@@ -143,11 +153,11 @@ export default function Home() {
 >
   <div className="w-full max-w-2xl">
 
-    <p className="text-cyan-300 tracking-[0.3em] text-sm font-semibold uppercase mb-5">
+    <p className="text-sky-300 tracking-[0.3em] text-sm font-semibold uppercase mb-5">
       AI Recruitment Flow
     </p>
 
-    <h2 className="text-6xl md:text-6xl font-extrabold leading-tight tracking-tight">
+    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium leading-tight tracking-tight">
       Vetting Zoo what it does?
     </h2>
 
@@ -171,7 +181,7 @@ export default function Home() {
   className="flex gap-6 cursor-pointer"
 >
         <div className="flex flex-col items-center">
-          <div className="h-14 w-14 rounded-full border border-cyan-300/30 bg-cyan-300/10 flex items-center justify-center text-cyan-300 font-bold text-lg">
+          <div className="h-14 w-14 rounded-full border border-sky-300/30 bg-sky-300/10 flex items-center justify-center text-sky-300 font-bold text-lg">
             01
           </div>
 
@@ -202,7 +212,7 @@ export default function Home() {
   className="flex gap-6 cursor-pointer"
 >
         <div className="flex flex-col items-center">
-          <div className="h-14 w-14 rounded-full border border-purple-300/30 bg-purple-300/10 flex items-center justify-center text-purple-300 font-bold text-lg">
+          <div className="h-14 w-14 rounded-full border border-blue-300/30 bg-blue-300/10 flex items-center justify-center text-blue-300 font-bold text-lg">
             02
           </div>
 
@@ -233,7 +243,7 @@ export default function Home() {
   className="flex gap-6 cursor-pointer"
 >
         <div className="flex flex-col items-center">
-          <div className="h-14 w-14 rounded-full border border-pink-300/30 bg-pink-300/10 flex items-center justify-center text-pink-300 font-bold text-lg">
+          <div className="h-14 w-14 rounded-full border border-sky-300/30 bg-sky-300/10 flex items-center justify-center text-sky-300 font-bold text-lg">
             03
           </div>
         </div>
@@ -257,11 +267,11 @@ export default function Home() {
 
   <section
   id="features"
-  className="relative px-10 py-36 bg-[#070a1a]"
+  className="relative px-10 py-36 bg-[#02040a]/40"
 >
   <div className="max-w-[1700px] mx-auto">
     
-    <h2 className="text-8xl font-black text-center text-white leading-tight">
+    <h2 className="text-4xl sm:text-6xl lg:text-7xl font-semibold text-center text-white leading-tight">
       Built for candidates & recruiters
     </h2>
 
@@ -269,24 +279,24 @@ export default function Home() {
       Vetting Zoo helps candidates improve resumes and helps recruiters identify the best talent using AI-powered hiring intelligence.
     </p>
 
-    <div className="grid lg:grid-cols-2 gap-20 mt-32">
+    <div className="grid lg:grid-cols-2 gap-8 lg:gap-20 mt-16 lg:mt-32">
 
       {/* LEFT CARD */}
 
-      <div className="rounded-[3rem] border border-cyan-300/10 bg-[#0b1222] p-16 min-h-[760px] hover:border-cyan-300/25 transition">
+      <div className="rounded-[3rem] border border-sky-300/10 bg-white/[0.04] p-6 sm:p-10 lg:p-16 lg:min-h-[760px] hover:border-sky-300/25 transition">
         
-        <div className="inline-flex px-6 py-3 rounded-full bg-cyan-300/10 text-cyan-300 text-lg font-bold mb-12">
+        <div className="inline-flex px-6 py-3 rounded-full bg-sky-300/10 text-sky-300 text-lg font-bold mb-12">
           FOR CANDIDATES
         </div>
 
-        <h3 className="text-7xl font-black mb-16 leading-tight">
+        <h3 className="text-3xl sm:text-5xl lg:text-6xl font-semibold mb-8 lg:mb-16 leading-tight">
           Resume Analyzer
         </h3>
 
         <div className="space-y-14">
 
           <div>
-            <h4 className="text-4xl font-black text-white">
+            <h4 className="text-4xl font-semibold text-white">
               AI Resume Match Analysis
             </h4>
 
@@ -296,7 +306,7 @@ export default function Home() {
           </div>
 
           <div>
-            <h4 className="text-4xl font-black text-white">
+            <h4 className="text-4xl font-semibold text-white">
               Missing Skills Detection
             </h4>
 
@@ -306,7 +316,7 @@ export default function Home() {
           </div>
 
           <div>
-            <h4 className="text-4xl font-black text-white">
+            <h4 className="text-4xl font-semibold text-white">
               AI Interview Preparation
             </h4>
 
@@ -320,20 +330,20 @@ export default function Home() {
 
       {/* RIGHT CARD */}
 
-      <div className="rounded-[3rem] border border-purple-300/10 bg-[#0b1222] p-16 min-h-[760px] hover:border-purple-300/25 transition">
+      <div className="rounded-[3rem] border border-blue-300/10 bg-white/[0.04] p-6 sm:p-10 lg:p-16 lg:min-h-[760px] hover:border-blue-300/25 transition">
         
-        <div className="inline-flex px-6 py-3 rounded-full bg-purple-300/10 text-purple-300 text-lg font-bold mb-12">
+        <div className="inline-flex px-6 py-3 rounded-full bg-blue-300/10 text-blue-300 text-lg font-bold mb-12">
           FOR RECRUITERS
         </div>
 
-        <h3 className="text-7xl font-black mb-16 leading-tight">
+        <h3 className="text-3xl sm:text-5xl lg:text-6xl font-semibold mb-8 lg:mb-16 leading-tight">
           Hiring Workspace
         </h3>
 
         <div className="space-y-14">
 
           <div>
-            <h4 className="text-4xl font-black text-white">
+            <h4 className="text-4xl font-semibold text-white">
               Multi-Candidate Ranking
             </h4>
 
@@ -343,7 +353,7 @@ export default function Home() {
           </div>
 
           <div>
-            <h4 className="text-4xl font-black text-white">
+            <h4 className="text-4xl font-semibold text-white">
               Explainable Hiring Insights
             </h4>
 
@@ -353,7 +363,7 @@ export default function Home() {
           </div>
 
           <div>
-            <h4 className="text-4xl font-black text-white">
+            <h4 className="text-4xl font-semibold text-white">
               Semantic Candidate Matching
             </h4>
 
@@ -369,10 +379,10 @@ export default function Home() {
   </div>
 </section>
 
-      <section id="screening" className="px-6 py-28 bg-black">
+      <section id="screening" className="px-6 py-14 lg:py-28 bg-[#02040a]/40">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
           <div>
-            <h2 className="text-6xl md:text-6xl font-black tracking-tight">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight">
               Try screening before login.
             </h2>
             <p className="mt-6 text-xl text-white/60 leading-9">
@@ -382,7 +392,7 @@ export default function Home() {
 
             <Link
               href="/demo"
-              className="inline-flex mt-8 rounded-full bg-white text-black px-8 py-4 font-bold hover:bg-cyan-200 transition"
+              className="inline-flex mt-8 rounded-full bg-white text-black px-8 py-4 font-bold hover:bg-sky-200 transition"
             >
               Launch Free Demo
             </Link>
@@ -390,16 +400,16 @@ export default function Home() {
 
           <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-8">
             <div className="grid gap-5">
-              <div className="rounded-3xl bg-cyan-300/10 border border-cyan-300/20 p-6">
-                <Layers className="h-8 w-8 text-cyan-300 mb-4" />
+              <div className="rounded-3xl bg-sky-300/10 border border-sky-300/20 p-6">
+                <Layers className="h-8 w-8 text-sky-300 mb-4" />
                 <h3 className="text-2xl font-bold">3 Intelligence Layers</h3>
                 <p className="text-white/55 mt-2">
                   Keyword ATS + Semantic AI + Gemini recruiter reasoning.
                 </p>
               </div>
 
-              <div className="rounded-3xl bg-purple-300/10 border border-purple-300/20 p-6">
-                <Brain className="h-8 w-8 text-purple-300 mb-4" />
+              <div className="rounded-3xl bg-blue-300/10 border border-blue-300/20 p-6">
+                <Brain className="h-8 w-8 text-blue-300 mb-4" />
                 <h3 className="text-2xl font-bold">Interview Intelligence</h3>
                 <p className="text-white/55 mt-2">
                   Generates recruiter questions based on resume fit and gaps.
@@ -410,19 +420,19 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="roadmap" className="px-6 py-28 bg-[#070a1a]">
+      <section id="roadmap" className="px-6 py-14 lg:py-28 bg-[#02040a]/40">
         <div className="max-w-6xl mx-auto text-center">
-          <Route className="h-12 w-12 mx-auto text-cyan-300 mb-6" />
-          <h2 className="text-6xl font-black text-center">
+          <Route className="h-12 w-12 mx-auto text-sky-300 mb-6" />
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-center">
   Ready to hire smarter?
 </h2>
           <p className="text-center text-white/55 mt-6 text-xl max-w-4xl mx-auto leading-9">
   Screen resumes, rank candidates, and streamline hiring with Vetting Zoo AI.
 </p>
 
-          <div className="mt-10 rounded-[2rem] border border-white/10 bg-gradient-to-r from-purple-500/20 via-cyan-500/10 to-pink-500/20 p-10">
-            <Building2 className="h-12 w-12 mx-auto text-cyan-300 mb-6" />
-            <h3 className="text-4xl font-black">
+          <div className="mt-10 rounded-[2rem] border border-white/10 bg-gradient-to-r from-blue-500/20 via-sky-500/10 to-sky-500/20 p-10">
+            <Building2 className="h-12 w-12 mx-auto text-sky-300 mb-6" />
+            <h3 className="text-4xl font-semibold">
               Start screening candidates with AI.
             </h3>
             <p className="mt-4 text-white/60 text-lg">
@@ -430,18 +440,18 @@ export default function Home() {
             </p>
             <Link
               href="/recruiter"
-              className="inline-block mt-8 rounded-full bg-white text-black px-8 py-4 font-bold hover:bg-cyan-200 transition"
+              className="inline-block mt-8 rounded-full bg-white text-black px-8 py-4 font-bold hover:bg-sky-200 transition"
             >
               Open Recruiter Dashboard
             </Link>
           </div>
         </div>
       </section>
-      <footer className="relative px-10 md:px-20 py-24 bg-[#030712] border-t border-white/10 overflow-hidden">
+      <footer className="relative px-10 md:px-20 py-24 bg-[#02040a]/60 border-t border-white/10 overflow-hidden">
   <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,#7c3aed22,transparent_30%),radial-gradient(circle_at_top_right,#06b6d422,transparent_30%)]" />
 
   <div className="relative z-10 w-full">
-    <div className="grid lg:grid-cols-[1.7fr_1fr_1fr_1fr] gap-20">
+    <div className="grid lg:grid-cols-[1.7fr_1fr_1fr_1fr] gap-8 lg:gap-20">
       <div>
         <div className="flex items-center gap-5 mb-8">
           <div className="h-20 w-20 rounded-3xl overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center">
@@ -449,8 +459,8 @@ export default function Home() {
           </div>
 
           <div>
-            <h2 className="text-6xl font-black tracking-tight">Vetting Zoo</h2>
-            <p className="text-cyan-300 text-lg mt-1">AI Hiring Intelligence</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight">Vetting Zoo</h2>
+            <p className="text-sky-300 text-lg mt-1">AI Hiring Intelligence</p>
           </div>
         </div>
 
@@ -459,7 +469,7 @@ export default function Home() {
         </p>
 
         <div className="mt-10 space-y-4 text-white/55 text-lg">
-          <a href="mailto:dheenadayalandgl@gmail.com" className="block hover:text-cyan-300 transition">📧 dheenadayalandgl@gmail.com</a>
+          <a href="mailto:dheenadayalandgl@gmail.com" className="block hover:text-sky-300 transition">📧 dheenadayalandgl@gmail.com</a>
           <p>👨‍💻 Founder: Dheenadayalan N</p>
           <p>🌍 India</p>
         </div>
@@ -468,33 +478,33 @@ export default function Home() {
       <div>
         <h3 className="text-2xl font-bold mb-8 text-white">Platform</h3>
         <div className="space-y-5 text-white/55 text-lg">
-          <Link href="/demo" className="block hover:text-cyan-300 transition">AI Screening</Link>
-          <Link href="/recruiter" className="block hover:text-cyan-300 transition">Recruiter Dashboard</Link>
-          <a href="#product" className="block hover:text-cyan-300 transition">Candidate Ranking</a>
-          <a href="#screening" className="block hover:text-cyan-300 transition">Semantic Matching</a>
-          <a href="#screening" className="block hover:text-cyan-300 transition">Interview Intelligence</a>
+          <Link href="/demo" className="block hover:text-sky-300 transition">AI Screening</Link>
+          <Link href="/recruiter" className="block hover:text-sky-300 transition">Recruiter Dashboard</Link>
+          <a href="#product" className="block hover:text-sky-300 transition">Candidate Ranking</a>
+          <a href="#screening" className="block hover:text-sky-300 transition">Semantic Matching</a>
+          <a href="#screening" className="block hover:text-sky-300 transition">Interview Intelligence</a>
         </div>
       </div>
 
       <div>
         <h3 className="text-2xl font-bold mb-8 text-white">Product</h3>
         <div className="space-y-5 text-white/55 text-lg">
-          <Link href="/demo" className="block hover:text-cyan-300 transition">Live Demo</Link>
-          <a href="#screening" className="block hover:text-cyan-300 transition">ATS Scoring</a>
-          <a href="#product" className="block hover:text-cyan-300 transition">AI Insights</a>
-          <Link href="/demo" className="block hover:text-cyan-300 transition">Resume Analysis</Link>
-          <Link href="/demo" className="block hover:text-cyan-300 transition">PDF Report Export</Link>
+          <Link href="/demo" className="block hover:text-sky-300 transition">Live Demo</Link>
+          <a href="#screening" className="block hover:text-sky-300 transition">ATS Scoring</a>
+          <a href="#product" className="block hover:text-sky-300 transition">AI Insights</a>
+          <Link href="/demo" className="block hover:text-sky-300 transition">Resume Analysis</Link>
+          <Link href="/demo" className="block hover:text-sky-300 transition">PDF Report Export</Link>
         </div>
       </div>
 
       <div>
         <h3 className="text-2xl font-bold mb-8 text-white">Resources</h3>
         <div className="space-y-5 text-white/55 text-lg">
-          <Link href="/demo" className="block hover:text-cyan-300 transition">Live Demo</Link>
-          <Link href="/recruiter" className="block hover:text-cyan-300 transition">Recruiter Dashboard</Link>
-          <a href="#screening" className="block hover:text-cyan-300 transition">AI Resume Screening</a>
-          <a href="#product" className="block hover:text-cyan-300 transition">Candidate Ranking</a>
-          <a href="mailto:dheenadayalandgl@gmail.com" className="block hover:text-cyan-300 transition">Contact Founder</a>
+          <Link href="/demo" className="block hover:text-sky-300 transition">Live Demo</Link>
+          <Link href="/recruiter" className="block hover:text-sky-300 transition">Recruiter Dashboard</Link>
+          <a href="#screening" className="block hover:text-sky-300 transition">AI Resume Screening</a>
+          <a href="#product" className="block hover:text-sky-300 transition">Candidate Ranking</a>
+          <a href="mailto:dheenadayalandgl@gmail.com" className="block hover:text-sky-300 transition">Contact Founder</a>
         </div>
       </div>
     </div>

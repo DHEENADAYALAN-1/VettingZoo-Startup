@@ -51,9 +51,9 @@ export default function SignupPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#050816] flex items-center justify-center px-6 text-white">
-      <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white/[0.06] p-8 shadow-2xl">
-        <h1 className="text-4xl font-black mb-3">Create Account</h1>
+    <main className="min-h-screen bg-transparent flex items-center justify-center px-6 text-white">
+      <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 shadow-2xl">
+        <h1 className="text-4xl font-semibold mb-3">Create Account</h1>
 
         <p className="text-white/50 mb-8">
           Create your recruiter account for Vetting Zoo.
@@ -76,7 +76,7 @@ export default function SignupPage() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 rounded-2xl bg-black/40 border border-white/10 p-4 outline-none focus:border-cyan-300/40"
+          className="w-full mb-4 rounded-2xl bg-white/[0.04] border border-white/10 p-4 outline-none focus:border-sky-300/40"
         />
 
        <div className="relative mb-6">
@@ -85,7 +85,7 @@ export default function SignupPage() {
     placeholder="Password"
     value={password}
     onChange={(e) => setPassword(e.target.value)}
-    className="w-full rounded-2xl bg-black/40 border border-white/10 p-4 pr-14 outline-none focus:border-cyan-300/40"
+    className="w-full rounded-2xl bg-white/[0.04] border border-white/10 p-4 pr-14 outline-none focus:border-sky-300/40"
   />
 
   <button
@@ -100,14 +100,14 @@ export default function SignupPage() {
         <button
           onClick={handleSignup}
           disabled={loading}
-          className="w-full rounded-full bg-white text-black py-4 font-bold hover:bg-cyan-200 transition disabled:opacity-60"
+          className="w-full rounded-full bg-white text-black py-4 font-bold hover:bg-sky-200 transition disabled:opacity-60"
         >
           {loading ? "Creating account..." : "Create Account"}
         </button>
 
         <p className="mt-6 text-center text-white/50">
           Already have an account?{" "}
-          <Link href="/login" className="text-cyan-300 hover:underline">
+          <Link href="/login" className="text-sky-300 hover:underline">
             Login
           </Link>
         </p>
