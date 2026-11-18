@@ -63,50 +63,62 @@ GEMINI_MODELS = [m for m in [os.getenv("GEMINI_MODEL"), "gemini-2.5-flash", "gem
 _working_model = None
 
 
-def call_gemini(prompt: str) -> str:
+def discover_models():
+    """Ask Google which models this key can use for text generation (flash models first)."""
+    try:
+        names = [m.name.replace("models/", "") for m in genai.list_models()
+                 if "generateContent" in m.supported_generation_methods]
+    except Exception:
+        return []
+    skip = ("preview", "exp", "image", "tts", "live", "audio", "thinking", "embedding", "vision")
+    flash = [n for n in names if "flash" in n and not any(w in n for w in skip)]
+    return flash or names
+
+
+def call_gemini(prompt: str, errors: dict = None) -> str:
     """Try each model until one answers, and remember the one that works."""
     global _working_model
     if not GEMINI_API_KEY:
         raise RuntimeError("GEMINI_API_KEY is not set")
-    order = ([_working_model] if _working_model else []) + [m for m in GEMINI_MODELS if m != _working_model]
-    last_error = None
-    for name in order:
+    errors = errors if errors is not None else {}
+    tried = []
+
+    def attempt(name):
+        global _working_model
+        if name in tried:
+            return None
+        tried.append(name)
         try:
             text = genai.GenerativeModel(name).generate_content(prompt).text
             _working_model = name
             return text
         except Exception as e:
-            last_error = e
-    raise last_error
+            errors[name] = str(e)[:160]
+            return None
+
+    for name in ([_working_model] if _working_model else []) + GEMINI_MODELS:
+        text = attempt(name)
+        if text:
+            return text
+    for name in discover_models()[:6]:
+        text = attempt(name)
+        if text:
+            return text
+    raise RuntimeError("No Gemini model answered")
 
 
 @app.get("/ai-check")
 def ai_check():
-    """Open /ai-check in a browser to see whether Gemini is working, and why not if it isn't."""
+    """Open /ai-check in a browser to see whether Gemini works, and why not if it does not."""
     if not GEMINI_API_KEY:
         return {"configured": False, "ok": False, "error": "GEMINI_API_KEY is not set"}
+    errors = {}
     try:
-        call_gemini("Reply with the single word OK.")
+        call_gemini("Reply with the single word OK.", errors)
         return {"configured": True, "ok": True, "model": _working_model}
     except Exception as e:
-        return {"configured": True, "ok": False, "error": str(e)[:300]}
-
-
-@app.get("/")
-def home():
-    return {"message": "Vetting Zoo AI Backend is running"}
-
-
-def calculate_semantic_score(resume_text: str, job_description: str):
-    try:
-        vectors = TfidfVectorizer(stop_words="english").fit_transform(
-            [resume_text, job_description]
-        )
-        similarity = cosine_similarity(vectors[0], vectors[1])[0][0]
-        return round(float(similarity) * 100, 2)
-    except Exception as e:
-        print("SEMANTIC ERROR:", e)
-        return 0.0
+        return {"configured": True, "ok": False, "error": str(e), "errors_by_model": errors,
+                "models_your_key_can_use": discover_models()[:12]}
 
 
 def find_evidence(text: str, skills, per_skill: int = 2):
